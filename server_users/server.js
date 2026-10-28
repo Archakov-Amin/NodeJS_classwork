@@ -1,10 +1,20 @@
 import express from "express";
+import cors from "cors";
 import mongoose from "mongoose";
 import router from "./routes/UserRoutes.js";
+import fileUpload from "express-fileupload";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const PORT = 5000;
 const app = express();
+app.use(cors());
 app.use(express.json());
+app.use(fileUpload({}));
+app.use("/uploads", express.static(path.resolve(__dirname, "uploads")));
 app.use(router);
 
 mongoose

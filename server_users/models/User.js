@@ -16,6 +16,9 @@ const userSchema = new mongoose.Schema({
     required: [true, "Заполните возраст пользователя!"],
     min: 12,
   },
+  avatar: {
+    type: String,
+  },
 });
 
 export default mongoose.model("User", userSchema);
