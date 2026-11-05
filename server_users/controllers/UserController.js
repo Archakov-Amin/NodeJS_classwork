@@ -1,5 +1,6 @@
 import fileService from "../middleware/fileService.js";
 import User from "../models/User.js";
+import hashService from "../middleware/hashService.js";
 
 class UserController {
   async getUsers(req, res) {
@@ -33,19 +34,51 @@ class UserController {
         fileName = await fileService.saveFile(req.files.avatar);
       }
 
-      const { name, lastName, age } = req.body;
+      const { name, lastName, age, email, password } = req.body;
+
+      const canditate = await User.findOne({email});
+
+      if (canditate) {
+        return res.status(400).json({ message: "Пользователь с таким email уже существует!" })
+      }
+
+      console.log(password);
+      
+      const hashPassword = await hashService.hashPassword(password);
+
+      console.log(hashPassword);
+
       const newUser = await User.create({
         name,
         lastName,
         age,
+        email,
+        password: hashPassword,
         avatar: fileName,
       });
 
       res.status(200).json(newUser);
-      newUser.save();
     } catch (err) {
       res.status(500).json(`Ошибка при регистрации: ${err}`);
       console.error(`Ошибка при регистрации: ${err}`);
+    }
+  }
+
+  async authorization (req, res) {
+    try {
+      const { email, password } = req.body;
+
+      const user = await User.findOne({ email });
+      const isPassValid = await hashService.comparePassword(password, user.password);
+
+      if (!user || !isPassValid) {
+        res.status(400).json({message: "Неверный email илли пароль"});
+      }
+
+      return res.status(200).json(user);
+    } catch (err) {
+      res.status(500).json(`Ошибка при авторизации: ${err}`);
+      console.error(`Ошибка при авторизации: ${err}`);
     }
   }
 
