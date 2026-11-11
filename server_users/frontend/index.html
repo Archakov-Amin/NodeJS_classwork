@@ -1,59 +1,96 @@
 <!DOCTYPE html>
 <html lang="ru">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Управление пользователями</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Users App</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
+  <header class="navbar">
+    <div class="logo">Users App</div>
+    <nav id="nav" class="nav-links"></nav>
+  </header>
 
-  <div class="container">
-    <h1>Управление пользователями</h1>
+  <main>
+    <!-- Секция авторизации -->
+    <section id="auth-section" class="view auth-page">
+      <div class="auth-card">
+        <h1 id="auth-title">Регистрация</h1>
+        <div id="auth-error" class="error" hidden></div>
 
-    <!-- Форма создания / редактирования -->
-    <div class="form-card">
-      <h2 id="form-title">Регистрация пользователя</h2>
-      <form id="user-form" enctype="multipart/form-data">
-        <input type="hidden" id="user-id">
+        <!-- Форма ВХОДА -->
+        <form id="login-form" class="auth-form" hidden novalidate>
+          <input name="email" type="email" placeholder="Email" required />
+          <input name="password" type="password" placeholder="Пароль" required />
+          <button type="submit">Войти</button>
+          <p class="switch-link">
+            Нет аккаунта? <a href="#" id="to-register">Зарегистрироваться</a>
+          </p>
+        </form>
 
-        <div class="form-group">
-          <label for="name">Имя:</label>
-          <input type="text" id="name" required placeholder="Иван">
+        <!-- Форма РЕГИСТРАЦИИ -->
+        <form id="register-form" class="auth-form">
+          <div class="avatar-upload">
+            <img id="avatar-preview" class="avatar" alt="" hidden />
+            <div id="avatar-placeholder" class="avatar placeholder">?</div>
+            <label class="file-label">
+              Загрузить аватар
+              <input type="file" id="avatar-input" accept="image/*" hidden />
+            </label>
+          </div>
+
+          <input name="name" placeholder="Имя" required />
+          <input name="lastName" placeholder="Фамилия" required />
+          <input name="age" type="number" min="12" placeholder="Возраст" required />
+          <input name="email" type="email" placeholder="Email" required />
+          <input name="password" type="password" minlength="6"
+                 placeholder="Пароль (мин. 6 символов)" required />
+
+          <button type="submit">Зарегистрироваться</button>
+          <p class="switch-link">
+            Уже есть аккаунт? <a href="#" id="to-login">Войти</a>
+          </p>
+        </form>
+      </div>
+    </section>
+
+    <!-- Секция ПРОФИЛЯ -->
+    <section id="profile-section" class="view" hidden>
+      <div class="profile-card">
+        <div id="profile-avatar-wrap"></div>
+        <h1 id="profile-name"></h1>
+        <p class="email" id="profile-email"></p>
+        <p id="profile-age"></p>
+
+        <div id="profile-error" class="error" hidden></div>
+
+        <div class="actions" id="profile-actions">
+          <button id="edit-profile-btn">Редактировать</button>
+          <button class="danger" id="delete-profile-btn">Удалить аккаунт</button>
         </div>
 
-        <div class="form-group">
-          <label for="lastName">Фамилия:</label>
-          <input type="text" id="lastName" required placeholder="Иванов">
-        </div>
+        <form id="edit-profile-form" class="edit-form" hidden>
+          <input name="name" placeholder="Имя" required />
+          <input name="lastName" placeholder="Фамилия" required />
+          <input name="age" type="number" min="12" placeholder="Возраст" required />
+          <div class="actions">
+            <button type="submit">Сохранить</button>
+            <button type="button" class="secondary" id="cancel-edit-btn">Отмена</button>
+          </div>
+        </form>
+      </div>
+    </section>
 
-        <div class="form-group">
-          <label for="age">Возраст (от 12 лет):</label>
-          <input type="number" id="age" min="12" required placeholder="25">
-        </div>
+    <!-- Секция ВСЕХ ПОЛЬЗОВАТЕЛЕЙ -->
+    <section id="users-section" class="view" hidden>
+      <h1>Все пользователи</h1>
+      <div id="users-error" class="error" hidden></div>
+      <div id="users-grid" class="users-grid"></div>
+    </section>
+  </main>
 
-        <div class="form-group">
-          <label for="avatar">Аватар:</label>
-          <input type="file" id="avatar" accept="image/*">
-        </div>
-
-        <div class="form-actions">
-          <button type="submit" id="submit-btn" class="btn btn-primary">Сохранить</button>
-          <button type="button" id="cancel-btn" class="btn btn-secondary hidden">Отмена</button>
-        </div>
-      </form>
-    </div>
-
-    <!-- Список пользователей -->
-    <h2>Список пользователей</h2>
-    <div id="users-list" class="users-grid">
-      <!-- Сюда JavaScript будет вставлять карточки -->
-    </div>
-  </div>
-
-  <script src="app.js"></script>
+  <script src="registr.js"></script>
+  <script src="profile.js"></script>
 </body>
-
 </html>

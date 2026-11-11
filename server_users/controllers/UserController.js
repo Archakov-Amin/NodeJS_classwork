@@ -1,6 +1,7 @@
-import fileService from "../middleware/fileService.js";
+import fileService from "../services/fileService.js";
 import User from "../models/User.js";
-import hashService from "../middleware/hashService.js";
+import hashService from "../services/hashService.js";
+import tokenService from "../services/tokenService.js";
 
 class UserController {
   async getUsers(req, res) {
@@ -18,7 +19,7 @@ class UserController {
       const user = await User.findById(id);
 
       if (!user) {
-        res.status(404).json("Такого пользователя не существует!");
+        return res.status(404).json("Такого пользователя не существует!");
       }
       res.status(200).json(user);
     } catch (err) {
@@ -36,17 +37,15 @@ class UserController {
 
       const { name, lastName, age, email, password } = req.body;
 
-      const canditate = await User.findOne({email});
+      const canditate = await User.findOne({ email });
 
       if (canditate) {
-        return res.status(400).json({ message: "Пользователь с таким email уже существует!" })
+        return res
+          .status(400)
+          .json({ message: "Пользователь с таким email уже существует!" });
       }
 
-      console.log(password);
-      
       const hashPassword = await hashService.hashPassword(password);
-
-      console.log(hashPassword);
 
       const newUser = await User.create({
         name,
@@ -64,18 +63,35 @@ class UserController {
     }
   }
 
-  async authorization (req, res) {
+  async authorization(req, res) {
     try {
       const { email, password } = req.body;
 
       const user = await User.findOne({ email });
-      const isPassValid = await hashService.comparePassword(password, user.password);
 
-      if (!user || !isPassValid) {
-        res.status(400).json({message: "Неверный email илли пароль"});
+      if (!user) {
+        return res.status(400).json({ message: "Неверный email илли пароль" });
       }
 
-      return res.status(200).json(user);
+      const isPassValid = await hashService.comparePassword(
+        password,
+        user.password
+      );
+
+      if (!isPassValid) {
+        return res.status(400).json({ message: "Неверный email илли пароль" });
+      }
+
+      const token = tokenService.generateAccessToken({
+        id: user._id
+      })
+
+      return res.status(200).json({token, user: {
+        id: user._id,
+        name: user.name,
+        lastName: user.lastName,
+        email: user.email
+      }});
     } catch (err) {
       res.status(500).json(`Ошибка при авторизации: ${err}`);
       console.error(`Ошибка при авторизации: ${err}`);
@@ -93,11 +109,11 @@ class UserController {
           lastName,
           age,
         },
-        { new: true }
+        { new: true }.select("-password")
       );
 
       if (!updateUser) {
-        res.status(404).json("Такого пользователя не существует!");
+        return res.status(404).json("Такого пользователя не существует!");
       }
 
       res.status(200).json(updateUser);
@@ -112,7 +128,7 @@ class UserController {
       const user = await User.findByIdAndDelete(id);
 
       if (!user) {
-        res.status(404).json("Такого пользователя не существует!");
+        return res.status(404).json("Такого пользователя не существует!");
       }
       res.status(200).json("Пользователь успешно удалён!");
     } catch (err) {
