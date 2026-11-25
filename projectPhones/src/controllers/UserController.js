@@ -32,7 +32,7 @@ class UserController {
                 }
             });
         } catch (err) {
-            res.status(500).json({ message: "Ошибка при регистрации" }, err)
+            res.status(500).json({ message: "Ошибка при регистрации", err })
         }
     }
 
@@ -67,7 +67,7 @@ class UserController {
                 }
             });
         } catch (err) {
-            res.status(500).json({ message: "Ошибка при авторизации" }, err);
+            res.status(500).json({ message: "Ошибка при авторизации", err });
         }
     }
 
@@ -75,6 +75,71 @@ class UserController {
         const {_id, firstName, lastName, email, avatar, role} = req.user;
 
         res.json({id: _id, firstName, lastName, email, avatar, role});
+    }
+
+    async changeMe(req, res) {
+        try {
+            const { _id } = req.user;
+            const { firstName, lastName, email, avatar, password, role } = req.body;
+
+            const updatedUserData = {}
+
+            const isUserExist = await User.findOne(_id);
+
+            if (!isUserExist) {
+                return res.status(404).json("Такого пользователя не существует!");
+            }
+
+            if (firstName) {
+                updatedUserData.firstName = firstName;
+            }
+
+            if (lastName) {
+                updatedUserData.lastName = lastName;
+            }
+
+            if (avatar) {
+                updatedUserData.avatar = avatar;
+            }
+
+            if (email) {
+                const isEmailTaken = await User.findOne({ email, _id: { $ne: _id } });
+
+                if (isEmailTaken) {
+                    return res.status(400).json({ message: "Пользователь с такой почтой уже существует" });
+                }
+                
+                updatedUserData.email = email;
+            }
+
+            if (password) {
+                const newPasswordHash = await passwordService.hashPassword(password);
+
+                updatedUserData.password = newPasswordHash;
+            }
+
+            if (role) {
+                updatedUserData.role = role;
+            }
+
+            const updatedUser = await User.findByIdAndUpdate(_id, updatedUserData, { new: true });
+
+            const token = tokenService.generateToken(updatedUser._id);
+
+            return res.status(200).json({
+                token, 
+                user: {
+                    id: updatedUser._id,
+                    firstName: updatedUser.firstName,
+                    lastName: updatedUser.lastName,
+                    email: updatedUser.email,
+                    avatar: updatedUser.avatar,
+                    role: updatedUser.role
+                }
+            });
+        } catch (err) {
+            return res.status(500).json({ message: "Ошибка при обновлении профиля", err })
+        }
     }
 }
 
